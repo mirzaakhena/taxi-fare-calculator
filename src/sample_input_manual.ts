@@ -20,6 +20,6 @@ export const manualDirectInput = () => {
   } catch (error: any) {
     //
     // print error
-    console.error(error.message);
+    // console.error(error.message);
   }
 };

@@ -1,4 +1,5 @@
 import { TaxiFareCalculator } from "../src/calculator.js";
+import logger from "../src/logger.js";
 
 describe("TaxiFareCalculator", () => {
   //
@@ -112,3 +113,5 @@ describe("TaxiFareCalculator", () => {
     expect(TaxiFareCalculator.getFare(20000)).toBe(2400);
   });
 });
+
+
