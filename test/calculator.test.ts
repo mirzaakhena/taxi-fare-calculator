@@ -1,5 +1,4 @@
-import { TaxiFareCalculator } from "../src/calculator.js";
-import logger from "../src/logger.js";
+import { TaxiFareCalculator } from "../src/taxi_fare_calculator.js";
 
 describe("TaxiFareCalculator", () => {
   //
@@ -20,6 +19,11 @@ describe("TaxiFareCalculator", () => {
     expect(() => calculator.addRecord("invalid record")).toThrow(throwedMessage);
   });
 
+  it("should throw error for blank line", () => {
+    const throwedMessage = "Blank line received";
+    expect(() => calculator.addRecord("")).toThrow(throwedMessage);
+  });
+
   it("should throw error for past time record", () => {
     calculator.addRecord("00:01:00.123 480.9");
     expect(() => calculator.addRecord("00:00:00.000 0.0")).toThrow("Past time received");
@@ -30,11 +34,27 @@ describe("TaxiFareCalculator", () => {
     expect(() => calculator.addRecord("00:06:00.000 600.0")).toThrow("Interval between records is more than 5 minutes");
   });
 
-  it("should handle single record gracefully", () => {
-    calculator.addRecord("00:00:00.000 0.0");
+  it("should return 0 if there are fewer than 2 records", () => {
+    expect(() => calculator.getCalculatedFare()).toThrow("Less than two records");
+  });
 
-    expect(calculator.getCalculatedFare()).toBe(0);
-    expect(calculator.getSortedDistanceMeter()).toEqual(["00:00:00.000 0.0 0.0"]);
+  it("should return 0 if there are only 1 record", () => {
+    calculator.addRecord("00:00:00.000 500.0");
+    expect(() => calculator.getCalculatedFare()).toThrow("Less than two records");
+  });
+
+  it("should throw error if new distance is smaller than the previous distance", () => {
+    calculator.addRecord("00:00:00.000 500.0");
+    expect(() => calculator.addRecord("00:01:00.000 400.0")).toThrow("New distance is smaller than the previous distance.");
+  });
+
+  it("should handle case when not moving at all", () => {
+    calculator.addRecord("00:00:00.000 0.0");
+    calculator.addRecord("00:01:00.100 0.0");
+    calculator.addRecord("00:02:00.200 0.0");
+    calculator.addRecord("00:03:00.200 0.0");
+
+    expect(() => calculator.getCalculatedFare()).toThrow("Total mileage is 0.0 m");
   });
 
   it("should handle edge case of fare calculation correctly", () => {
@@ -50,15 +70,6 @@ describe("TaxiFareCalculator", () => {
       "00:02:00.200 1000.1 0.2",
       "00:00:00.000 0.0 0.0",
     ]);
-  });
-
-  it("should return 0 if there are fewer than 2 records", () => {
-    expect(calculator.getCalculatedFare()).toBe(0);
-  });
-
-  it("should return 0 if there are only 1 record", () => {
-    calculator.addRecord("00:00:00.000 500.0");
-    expect(calculator.getCalculatedFare()).toBe(0);
   });
 
   it("should calculate the correct fare for up to 1 km", () => {
@@ -98,6 +109,24 @@ describe("TaxiFareCalculator", () => {
     ]);
   });
 
+  it("should change the fare algorithm", () => {
+    calculator.setFareAlgorithm((distance) => {
+      // set constant value
+      return 300;
+    });
+
+    // no matter how much the record added
+    calculator.addRecord("00:00:00.000 0.0");
+    calculator.addRecord("00:01:00.123 480.9");
+    calculator.addRecord("00:02:00.125 1141.2");
+    calculator.addRecord("00:03:00.100 1800.8");
+
+    // the fare keep constant
+    expect(calculator.getCalculatedFare()).toBe(300);
+  });
+});
+
+describe("TaxiFareCalculator.getFare", () => {
   it("should return the base fare of 400 yen for up to 1 km", () => {
     expect(TaxiFareCalculator.getFare(1000)).toBe(400);
     expect(TaxiFareCalculator.getFare(500)).toBe(400);
@@ -113,5 +142,3 @@ describe("TaxiFareCalculator", () => {
     expect(TaxiFareCalculator.getFare(20000)).toBe(2400);
   });
 });
-
-

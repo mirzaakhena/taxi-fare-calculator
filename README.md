@@ -1,96 +1,133 @@
-# Backend Engineer Take Home Test
+# Taxi Fare Calculator
 
-## Specification
+A TypeScript-based taxi fare calculator that allows for flexible fare calculation algorithms, detailed logging, and easy integration with different input methods.
 
-# Create a program that gets taxi fares in Go or Javascript or TypeScript (node.js)
+## Table of Contents
 
-### (i) Overview
+- [Features](#features)
+- [Installation](#installation)
+- [Running in Dev Mode](#running-in-dev-mode)
+- [Running in Production Mode](#running-in-production-mode)
+- [Running Tests](#running-tests)
+- [Usage](#usage)
+- [Logs](#logs)
+- [Test Case](#test-case)
 
-1. The base fare is 400 yen for up to 1 km.
-2. Up to 10 km, 40 yen is added every 400 meters.
-3. Over 10km, 40 yen is added every 350 meters.
+## Features
 
-This taxi is equipped with the following two meters. Only one of the most recent real values is
-recorded on these meters.
+- **Separation of Concerns:** Core logic is decoupled from auxiliary services like logging.
+- **Modular Components:** Each component handles a specific responsibility, making the code maintainable and extensible.
+- **Flexible Fare Calculation:** You can set custom fare calculation algorithms without modifying the core class.
+- **Optional Logger:** The system functions normally even if no logger is provided.
+- **Detailed Error Handling:** Specific error messages and logging make debugging easier.
+- **Data Validation and Parsing:** Ensures input data is correctly formatted and logically coherent.
+- **Type Safety:** Uses TypeScript for compile-time type safety.
+- **Record Management:** Handles the addition, validation, and sorting of records efficiently.
 
-- Distance Meter
-- Fare Meter
-    
-    
+## Installation
 
-### (ii) Input Format
+1. Clone the repository:
 
-Distance meter records are sent line by line for standard input in the following format.
-```
-00:00:00.000 0.0
-00:01:00.123 480.9
-00:02:00.125 1141.2
-00:03:00.100 1800.8
-```
-The specifications of the distance meter are as follows.
+   ```sh
+   git clone https://github.com/mirzaakhena/taxi-fare-calculator.git
+   cd taxi-fare-calculator
+   ```
 
-- Space-separated first half is elapsed time (Max 99:99:99.999), second half is mileage.(the unit is meters, Max: 99999999.9)
-- It keeps only the latest values.
-- It calculates and creates output of the mileage per minute, but an error of less than 1
-second occurs.
-    
-    
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
 
-### (iii) Error Definition
+## Running in dev mode
 
-Error occurs under the following conditions.
-
-- Not under the format of, hh:mm:ss.fff<SPACE>xxxxxxxx.f<LF>, but under an improper
-format.
-- Blank Line
-- When the past time has been sent.
-- The interval between records is more than 5 minutes apart.
-- When there are less than two lines of data.
-- When the total mileage is 0.0m.
-
-### (iv) Output
-
-Display the current fare as an integer on the fare meter (standard output).
-12345
-
-On the next lines, display all of the input data with mileage difference compared to previous data, and order it from highest to lowest
-```
-00:02:00.125 1141.2 660.3
-00:03:00.100 1800.8 659.6
-00:01:00.123 480.9 480.9
-00:00:00.000 0.0 0.0
+```bash
+npm run dev
 ```
 
-Standard output displays nothing for incorrect inputs that do not meet specifications, the exit code ends with a value other than 0.
+## Running in production mode
 
-## What to submit
+First you need to build it
 
-Submission needs to meet the following conditions for grading.
+```bash
+npm run build
+```
 
-1. Be able to run on Debian Linux, Windows, and MacOS.
-2. The files are zipped together into one file.
-3. For programming languages that require compilation, include a set of README with build instructions along with the source code.
-4. Include test code. 
-5. Logs should be output in appropriate timing and places.
+Then you can run it directly from /dist directory
 
-For programming languages that require compilation, make a set of README that summarizes how to build with source code.
+```bash
+npm run start
+```
 
-## Hiring Criteria
+## Running test
 
-- Is the core function test written?
-- Is the test coverage at 70%?
-- Are error cases taken into account as well as normal cases?
-- Is there a log for each important part and is monitoring taken into account?
-- Are logs written in important parts?
-- Are logs structured in JSON or other format to facilitate later investigation?
-- Based on the abstraction or documentation, is maintainability taken into account to facilitate the additional functions?
-- Is the selection of libraries reasonable?
-- Are computational costs taken into account?
-- Is there proper usage of data structure and sorting method?
-- Is the execution environment taken into account enough to run anywhere?
-- Does it take the general directory structure of projects?
-- Basic knowledge of classes
-- Naming of classes (e.g. whether he/she uses properly camel case or snake case)
-- Property naming
-- Naming of methods (The ability to name object orientation and things properly)
-- Appropriate comments for later readers of the code
+```bash
+npm test
+```
+
+## Usage
+
+1. Manual Direct Input. See `sample_input_manual.ts`
+2. Manual Direct Input with Custom Algorithm `sample_input_change_fare_algorithm.ts`
+3. Receive Input Line by Line `sample_input_line_by_line.ts`
+
+You may enable it by comment / uncomment it in `index.ts` then run it in dev mode.
+
+```typescript
+import { receiveInputLineByLine } from "./sample_input_line_by_line.js";
+import { manualDirectInput } from "./sample_input_manual.js";
+import { manualDirectInputWithChangingAlgorithm } from "./sample_input_change_fare_algorithm.js";
+
+receiveInputLineByLine();
+// manualDirectInput();
+// manualDirectInputWithChangingAlgorithm();
+```
+
+## Logs
+
+When using the sample from `receiveInputLineByLine`, it uses `winston` library that store all the log in `logs/app.log`.
+
+## Test Case
+
+### Adding Records:
+
+- Valid Records: Test that valid records are added without errors.
+
+- Invalid Format: Test that an error is thrown for invalid record format.
+
+- Blank Line: Test that an error is thrown for a blank line.
+
+- Past Time: Test that an error is thrown when a record with past time is added.
+
+- Interval More Than 5 Minutes: Test that an error is thrown when the interval between records exceeds 5 minutes.
+
+- Smaller Distance: Test that an error is thrown when a new record has a smaller distance than the previous record.
+
+### Fare Calculation:
+
+- Fewer Than 2 Records: Test that an error is thrown if there are fewer than two records.
+
+- One Record: Test that an error is thrown if there is only one record.
+
+- No Movement: Test that an error is thrown if there is no movement (total mileage is 0.0 m).
+
+- Edge Case (Up to 1 km): Test that the fare is correctly calculated for distances just over 1 km.
+
+- Up to 1 km: Test that the fare is 400 yen for distances up to 1 km.
+
+- Up to 10 km: Test that the fare is correctly calculated for distances up to 10 km.
+
+- Over 10 km: Test that the fare is correctly calculated for distances over 10 km.
+
+- Changing Fare Algorithm: Test that the fare calculation algorithm can be changed and applied correctly.
+
+### Sorted Records:
+
+- Sorted by Distance Difference: Test that records are correctly sorted by distance difference.
+
+### Base Fare:
+
+- Up to 1 km: Test that the base fare is 400 yen for distances up to 1 km.
+
+- 1 km to 10 km: Test that the fare is correctly calculated for distances between 1 km and 10 km.
+
+- Over 10 km: Test that the fare is correctly calculated for distances over 10 km.

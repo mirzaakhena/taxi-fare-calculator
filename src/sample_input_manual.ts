@@ -1,12 +1,32 @@
-import { TaxiFareCalculator } from "./calculator.js";
+import { TaxiFareCalculatorLogger, TaxiFareCalculator } from "./taxi_fare_calculator.js";
+
+/**
+ * this logger implementation use the simple built in console javascript
+ */
+class ImplLogger implements TaxiFareCalculatorLogger {
+  debug(message: any): void {
+    console.debug(JSON.stringify(message));
+  }
+
+  error(message: any): void {
+    console.error(JSON.stringify(message));
+  }
+
+  info(message: any): void {
+    console.info(JSON.stringify(message));
+  }
+}
 
 export const manualDirectInput = () => {
   //
 
   try {
     //
-    // instantiate calculator
-    const calculator = new TaxiFareCalculator();
+
+    // instantiate calculator with logger
+    const calculator = new TaxiFareCalculator({
+      logger: new ImplLogger(),
+    });
 
     // add records
     calculator.addRecord("00:00:00.000 0.0");
@@ -20,6 +40,6 @@ export const manualDirectInput = () => {
   } catch (error: any) {
     //
     // print error
-    // console.error(error.message);
+    console.error(error.message);
   }
 };
